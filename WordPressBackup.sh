@@ -33,7 +33,7 @@ echo "Using Profile: ${backupprofile}";
                                 # Verifing wp_config exists
         if [ -f "$wp_config" ]; then
                     # BackupName Date and time
-                                backupname=$(date +%d%m%Y)
+                                backupname=$(date +%Y%m%d)
     
                                 # Pulls Database info from WP-config
                                 db_name=$(grep DB_NAME "${wp_config}" | cut -f4 -d"'")
@@ -50,20 +50,15 @@ echo "Using Profile: ${backupprofile}";
 
 
                                 # MySQL Takes a Dump and compress the Home Directory
-                                mysqldump -u ${db_user} -p${db_pass} ${db_name} | gzip > ./${backupname}-DB.sql.gz &&
-                                tar zcPf ./${backupname}-FILES.tar.gz ${wp_root}
+                                mysqldump -u ${db_user} -p${db_pass} ${db_name} | gzip > ./${wp_domain}-${backupname}-DB.sql.gz &&
+                                tar zcPf ./${wp_domain}-${backupname}-FILES.tar.gz ${wp_root}
 
-                                # Compresses the MySQL Dump and the Home Directory
-                                tar zcPf ./${wp_domain}-${backupname}.tar.gz ./${backupname}-FILES.tar.gz ./${backupname}-DB.sql.gz
-                                chmod 600 ./${wp_domain}-${backupname}.tar.gz
+                                chmod 600 ./*.gz
 
                                 # Generates the Backup Size
-                                FILENAME=${backup_location}/${user}/${wp_domain}/${wp_domain}-${backupname}.tar.gz
-                                FILESIZE=$(du -h "$FILENAME")
+                                FILENAME=${backup_location}/${user}/${wp_domain}/${wp_domain}-${backupname}-*.gz
+                                FILESIZE=$(du -h $FILENAME)
                                 echo "$FILESIZE"
-
-                                #Removes the SQL dump and Home DIR to conserve space
-                                rm -rf ./${backupname}-FILES.tar.gz ./${backupname}-DB.sql.gz
 
                                 #Deletes any Backup older than X days
                               find ${backup_location}/${user}/${wp_domain}/ -type f -mtime +${keepdays} -exec rm {} \;
@@ -76,4 +71,4 @@ done
 echo " ";
 echo "********************************************************************";
 echo "This script is licensed under GPL https://github.com/jamesrascal/wordpress-backup/";
-echo "Run Date: $(date +%d%m%Y%k%M)";
+echo "Run Date: $(date +%Y%m%d%k%M)";
